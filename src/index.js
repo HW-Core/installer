@@ -23,7 +23,7 @@ function installRoot() {
     else
         process.chdir("../");
     
-    install([appName + '=git@github.com:hw2-core/root.git'], {"cwd": process.cwd(),"directory": "./"}, installDirs);
+    install([appName + '=git://github.com/hw2-core/root.git'], {"cwd": process.cwd(),"directory": "./"}, installDirs);
 }
 
 function installDirs() {
@@ -42,11 +42,11 @@ function installDirs() {
 }
 
 function installLocal() {
-    install(["local=git@github.com:hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, installShare);
+    install(["local=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, installShare);
 }
 
 function installShare() {
-    install(["share=git@github.com:hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, runCommand);
+    install(["share=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, runCommand);
 }
 
 function runCommand() {
