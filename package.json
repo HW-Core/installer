@@ -1,0 +1,33 @@
+{
+  "name": "hw2core-installer",
+  "version": "0.0.1",
+  "description": "Installer for Hw2Core",
+  "licenses": [
+    {
+      "type": "GPL3",
+      "url": "http://www.hyperweb2.com/terms/"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hw2-core/installer"
+  },
+  "homepage": "https://github.com/hw2-core/installer",
+  "dependencies": {
+    "hw2core-bower": "*",
+    "inquirer" : "*"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  },
+  "main": "src",
+  "bin": {
+    "hw2installer": "bin/hw2installer"
+  },
+  "preferGlobal": true,
+  "readmeFilename": "README.txt",
+  "bugs": {
+    "url": "https://github.com/hw2-core/installer/issues"
+  }
+}
