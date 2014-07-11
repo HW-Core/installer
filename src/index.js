@@ -64,12 +64,12 @@ var Installer = function() {
         } else {
             dir = "share";
         }
-        
-        var cwd=appName + "/" + dir;
-        var rc=utils.readJson("./" + cwd + '/.bowerrc');
 
-        rc.cwd=cwd;
-        rc.interactive=true;
+        var cwd = appName + "/" + dir;
+        var rc = utils.readJson("./" + cwd + '/.bowerrc');
+
+        rc.cwd = cwd;
+        rc.interactive = true;
 
         utils.createJson(appName, dir, function() {
             var endPoints = options.argv.remain.slice(1);
