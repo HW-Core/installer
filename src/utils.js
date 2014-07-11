@@ -7,7 +7,11 @@ var Utils=function() {};
 Utils.install=function(endPoints, conf, callback) {
     var installer = require('hw2core-bower');
     
-    installer.commands.install(endPoints, {save: true, force: true}, conf).on('end', function(installed) {
+    var rc=Utils.readJson("./" + conf.cwd + '/.bowerrc');
+    
+    rc=Utils.extend({},rc,conf);
+    
+    installer.commands.install(endPoints, {save: true, force: true}, rc).on('end', function(installed) {
         console.log(endPoints + " [OK]");
 
         if (typeof callback === "function") {
@@ -66,5 +70,34 @@ Utils.processArg=function(arg, consume) {
 
     return found;
 };
+
+Utils.readJson=function(file) {
+    var fs = require("fs");
+    var json = {};
+    try {
+        json = (JSON.parse(fs.readFileSync(file, "utf8")));
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
+    
+    return json;
+}
+
+/**
+ * 
+ * @param target
+ * @param sources multiple arguments as source
+ * @returns {unresolved}
+ */
+Utils.extend=function(target/*, sources... */) {
+    var sources = [].slice.call(arguments, 1);
+    sources.forEach(function (source) {
+        for (var prop in source) {
+            target[prop] = source[prop];
+        }
+    });
+    return target;
+}
 
 module.exports=Utils;

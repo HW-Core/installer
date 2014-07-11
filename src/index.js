@@ -42,11 +42,11 @@ var Installer = function() {
     };
 
     this.installLocal = function() {
-        utils.install(["local=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, this.installShare.bind(this));
+        utils.install(["local=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName}, this.installShare.bind(this));
     };
 
     this.installShare = function() {
-        utils.install(["share=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName, "directory": "./"}, this.runCommand.bind(this));
+        utils.install(["share=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName}, this.runCommand.bind(this));
     };
 
     this.runCommand = function() {
@@ -64,13 +64,19 @@ var Installer = function() {
         } else {
             dir = "share";
         }
+        
+        var cwd=appName + "/" + dir;
+        var rc=utils.readJson("./" + cwd + '/.bowerrc');
+
+        rc.cwd=cwd;
+        rc.interactive=true;
 
         utils.createJson(appName, dir, function() {
             var endPoints = options.argv.remain.slice(1);
             var cmd = options.argv.remain[0];
             var cmdFunc = installer.commands[options.argv.remain[0]];
 
-            cmdFunc(endPoints, {save: true}, {"cwd": appName + "/" + dir, "directory": "./modules", "interactive": true}).on('error', function(err) {
+            cmdFunc(endPoints, {save: true}, rc).on('error', function(err) {
                 console.log(err);
                 process.exit(1);
             }).on('end', function(data) {
@@ -78,6 +84,8 @@ var Installer = function() {
                 process.exit();
             }).on('prompt', function(prompt, callback) {
                 inquirer.prompt(prompt, callback);
+            }).on('log', function(data) {
+                //console.log(data);
             });
         });
     };
