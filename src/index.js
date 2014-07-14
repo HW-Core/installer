@@ -5,29 +5,31 @@
 
 
 var Installer = function() {
+    var Q = require('hw2core-bower/node_modules/q');
     var utils = require('./utils.js');
     var git = require('./git.js');
     var fs = require('fs');
-    var inquirer = require('inquirer');
+    var inquirer = require('hw2core-bower/node_modules/inquirer');
     var cl = require("hw2core-bower/lib/util/cli");
     var installer = require('hw2core-bower');
+    var Logger = require('hw2core-bower/node_modules/bower-logger');
 
     this.installRoot = function() {
         var path = utils.getCwd();
-        appName = path.substring(path.lastIndexOf('/') + 1, path.length);
-        if (appName.isEmpty()) // if we are on system root folder "/" , we've to force an appname
-            appName = "yourapp";
+        this.appName = path.substring(path.lastIndexOf('/') + 1, path.length);
+        if (this.appName.isEmpty()) // if we are on system root folder "/" , we've to force an appname
+            this.appName = "yourapp";
         else
             process.chdir("../");
 
-        git.installWithGit("git://github.com/hw2-core/root.git", utils.getCwd() + "/" + appName, this.installDirs.bind(this));
+        git.installWithGit("git://github.com/hw2-core/root.git", utils.getCwd() + "/" + this.appName, this.installDirs.bind(this));
         //install([appName + "=git://github.com/hw2-core/root.git"], {"cwd": getCwd(), "directory": "./"}, installShare);
     };
 
     this.installDirs = function() {
         var that = this;
 
-        fs.exists(appName + "/bower.json", function(exists) {
+        fs.exists(this.appName + "/bower.json", function(exists) {
             if (!exists) {
                 installer.commands.init({"directory": "./", "interactive": true}).on('end', function(data) {
                     that.installLocal();
@@ -42,11 +44,11 @@ var Installer = function() {
     };
 
     this.installLocal = function() {
-        utils.install(["local=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName}, this.installShare.bind(this));
+        utils.install(["local=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + this.appName}, this.installShare.bind(this));
     };
 
     this.installShare = function() {
-        utils.install(["share=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + appName}, this.runCommand.bind(this));
+        utils.install(["share=git://github.com/hw2-core/directory-structure.git"], {"cwd": "./" + this.appName}, this.runCommand.bind(this));
     };
 
     this.runCommand = function() {
@@ -65,27 +67,56 @@ var Installer = function() {
             dir = "share";
         }
 
-        var cwd = appName + "/" + dir;
-        var rc = utils.readJson("./" + cwd + '/.bowerrc');
+        var cwd = process.cwd()+"/"+this.appName + "/" + dir;
+        var rc = utils.readJson(cwd + '/.bowerrc');
 
         rc.cwd = cwd;
         rc.interactive = true;
 
-        utils.createJson(appName, dir, function() {
+        utils.createJson(this.appName, dir, function() {
             var endPoints = options.argv.remain.slice(1);
             var cmd = options.argv.remain[0];
-            var cmdFunc = installer.commands[options.argv.remain[0]];
+            var cmdFunc = installer.commands[cmd];
 
-            cmdFunc(endPoints, {save: true}, rc).on('error', function(err) {
-                console.log(err);
+            var logger=cmdFunc(endPoints, {save: true}, rc)
+            
+            var loglevel;
+            var levels = Logger.LEVELS;
+            // Set loglevel
+            if (installer.config.silent) {
+                loglevel = levels.error;
+            } else if (installer.config.verbose) {
+                loglevel = -Infinity;
+                Q.longStackSupport = true;
+            } else if (installer.config.quiet) {
+                loglevel = levels.warn;
+            } else {
+                loglevel = levels[installer.config.loglevel] || levels.info;
+            }
+                        
+            var renderer = cl.getRenderer(cmd, logger.json, installer.config);
+            logger.on('end', function (data) {
+                if (!installer.config.silent && !installer.config.quiet) {
+                    renderer.end(data);
+                }
+            })
+            .on('error', function (err)  {
+                if (levels.error >= loglevel) {
+                    renderer.error(err);
+                }
+        
                 process.exit(1);
-            }).on('end', function(data) {
-                console.log(cmd + " command executed successfully");
-                process.exit();
-            }).on('prompt', function(prompt, callback) {
-                inquirer.prompt(prompt, callback);
-            }).on('log', function(data) {
-                //console.log(data);
+            })
+            .on('log', function (log) {
+                if (levels[log.level] >= loglevel) {
+                    renderer.log(log);
+                }
+            })
+            .on('prompt', function (prompt, callback) {
+                renderer.prompt(prompt)
+                .then(function (answer) {
+                    callback(answer);
+                });
             });
         });
     };

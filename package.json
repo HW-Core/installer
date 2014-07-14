@@ -1,6 +1,6 @@
 {
   "name": "hw2core-installer",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Installer for Hw2Core",
   "licenses": [
     {
@@ -14,8 +14,7 @@
   },
   "homepage": "https://github.com/hw2-core/installer",
   "dependencies": {
-    "hw2core-bower": "*",
-    "inquirer" : "*"
+    "hw2core-bower": "*"
   },
   "devDependencies": {
   },
