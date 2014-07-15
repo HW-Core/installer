@@ -10,3 +10,5 @@ for local installation:
 >npm install hw2core-installer
 
 This programm will create hw2core folder structure if doesn't exist and installs/updates modules for hw2core.
+
+**please be careful with your sensible data since it's under continuous development**
