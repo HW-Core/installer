@@ -39,8 +39,8 @@ Git.cb = function(callback) {
     };
 };
 
-Git.installWithGit = function(repo, folder, callback) {
-    fs.exists(folder + "/.git", Git.create_worker(folder, repo, callback));
+Git.installWithGit = function(repo, folder, callback, update) {
+    fs.exists(folder + "/.git", Git.create_worker(folder, repo, callback, update));
 };
 
 // Performs a git pull + reset in the given git directory.
@@ -54,13 +54,18 @@ Git.git_clone = function(url, dir, callback) {
 };
 
 
-Git.create_worker = function(gitdir, clone_url, callback) {
+Git.create_worker = function(gitdir, clone_url, callback, update) {
     return function(exists) {
         if (exists) {
-            emitter.emit('info', util.format('%s exists, will pull.', gitdir));
+            if (!update) {
+                callback();
+                return;
+            }
+
+            emitter.emit('info', util.format('Checking for updates on %s', gitdir));
             Git.git_pull(gitdir, callback);
         } else {
-            emitter.emit('info', util.format('%s does not exist, will clone from %s.', gitdir, clone_url));
+            emitter.emit('info', util.format('New installation, cloning from %s.', gitdir, clone_url));
             Git.git_clone(clone_url, gitdir, callback);
         }
     };
