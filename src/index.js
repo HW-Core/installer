@@ -5,6 +5,7 @@
 
 
 var Installer = function() {
+    
     var utils = require('./utils.js');
     var git = require('./git.js');
     var fs = require('fs');
@@ -39,8 +40,11 @@ var Installer = function() {
     this.runCommand = function() {
         if (!utils.processArg("--save-dev"))
             utils.pushArgs(["--save", "--config.interactive"]);
-
-        require(__dirname + "/../node_modules/hw2core-bower/bin/hw2-bower.js");
+        
+        var child_process = require('child_process');
+        
+        var path=__dirname + "/../node_modules/hw2core-bower/bin/hw2-bower.js";
+        child_process.fork(path,process.argv.slice(2),{cwd:process.cwd()});
     };
 
     this.help = function() {

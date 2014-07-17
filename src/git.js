@@ -45,12 +45,12 @@ Git.installWithGit = function(repo, folder, callback, update) {
 
 // Performs a git pull + reset in the given git directory.
 Git.git_pull = function(gitdir, callback) {
-    exec(util.format('git --git-dir=%s/.git pull && git --git-dir=%s/.git reset --hard origin/master', gitdir, gitdir), Git.cb(callback));
+    exec(util.format('git --git-dir="%s/.git" pull && git --git-dir="%s/.git" reset --hard origin/master', gitdir, gitdir), Git.cb(callback));
 };
 
 // Performs a git clone of the given URL into the given directory.
 Git.git_clone = function(url, dir, callback) {
-    exec(util.format('git clone %s %s', url, dir), Git.cb(callback));
+    exec(util.format('git clone %s "%s"', url, dir), Git.cb(callback));
 };
 
 
