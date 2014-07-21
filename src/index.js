@@ -14,35 +14,34 @@ var Installer = function() {
     this.initProject = function() {
         var that = this;
 
+        var init = !fs.existsSync(utils.getCwd() + "/bower.json");
+
         var bowerrc = {
             directory: './'
         };
 
         var outputFilename = '.bowerrc';
 
-        fs.writeFile(outputFilename, JSON.stringify(bowerrc, null, 4), function(err) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("bowerrc created");
+        if (!fs.existsSync(outputFilename)) {
+            var err = fs.writeFileSync(outputFilename, JSON.stringify(bowerrc, null, 4));
+            console.log(err || "bowerrc created");
+        } else if (init) {
+            console.log("WARNING: bowerrc already exits in this folder!");
+        }
 
-                installer = require('hw2core-bower');
-                inquirer = require('hw2core-bower/node_modules/inquirer');
+        installer = require('hw2core-bower');
+        inquirer = require('hw2core-bower/node_modules/inquirer');
 
-                fs.exists(utils.getCwd() + "/bower.json", function(exists) {
-                    if (!exists) {
-                        console.log("Insert your project specifications:");
-                        installer.commands.init({"directory": utils.getCwd(), "interactive": true}).on('end', function(data) {
-                            that.runCommand();
-                        }).on('prompt', function(prompts, callback) {
-                            inquirer.prompt(prompts, callback);
-                        });
-                    } else {
-                        that.runCommand();
-                    }
-                });
-            }
-        });
+        if (init) {
+            console.log("Insert your project specifications:");
+            installer.commands.init({"directory": utils.getCwd(), "interactive": true}).on('end', function(data) {
+                that.runCommand();
+            }).on('prompt', function(prompts, callback) {
+                inquirer.prompt(prompts, callback);
+            });
+        } else {
+            that.runCommand();
+        }
     };
 
     this.runCommand = function() {
@@ -51,20 +50,25 @@ var Installer = function() {
 
         var path = __dirname + "/../node_modules/.bin/hw2-bower";
         var child_process = require('child_process');
-        child_process.execFile(path,process.argv.slice(2),
-                {cwd: process.cwd()}, function(error, stdout, stderr) {
-            console.log('Installing module...');
-
-            if (stderr !== null) {
-                console.log('' + stderr);
-            }
-            if (stdout !== null) {
-                console.log('' + stdout);
-            }
-            if (error !== null) {
-                console.log('' + error);
-            }
+        
+        // set stdio and customFds for colored logs in *nix and win
+        var child=child_process.spawn(path, process.argv.slice(2),
+                {cwd: process.cwd(), stdio: "inherit", customFds: [0,1,2]});
+        
+        // we can't use this beacause when custom file descriptors are specified, 
+        // the streams are literally set to null and are completely inaccessible from the parent.
+        
+        /*child.stdout.on("data", function (data) {
+            console.log(data);
         });
+
+        child.stderr.on("data", function(data) {
+            console.log(data);
+        });
+
+        child.on("exit", function(code) {
+            console.log(code);
+        }); */
     };
 
     this.help = function() {
