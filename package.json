@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/hw2-core/installer",
   "dependencies": {
-    "hw2core-bower": "*"
+    "upt": "*"
   },
   "devDependencies": {},
   "scripts": {},

@@ -14,23 +14,23 @@ var Installer = function() {
     this.initProject = function() {
         var that = this;
 
-        var init = !fs.existsSync(utils.getCwd() + "/bower.json");
+        var init = !fs.existsSync(utils.getCwd() + "/upt.json");
 
-        var bowerrc = {
+        var uptrc = {
             directory: './'
         };
 
-        var outputFilename = '.bowerrc';
+        var outputFilename = '.uptrc';
 
         if (!fs.existsSync(outputFilename)) {
-            var err = fs.writeFileSync(outputFilename, JSON.stringify(bowerrc, null, 4));
-            console.log(err || "bowerrc created");
+            var err = fs.writeFileSync(outputFilename, JSON.stringify(uptrc, null, 4));
+            console.log(err || "uptrc created");
         } else if (init) {
-            console.log("WARNING: bowerrc already exits in this folder!");
+            console.log("WARNING: uptrc already exits in this folder!");
         }
 
-        installer = require('hw2core-bower');
-        inquirer = require('hw2core-bower/node_modules/inquirer');
+        installer = require('upt');
+        inquirer = require('upt/node_modules/inquirer');
 
         if (init) {
             console.log("Insert your project specifications:");
@@ -48,7 +48,7 @@ var Installer = function() {
         if (!utils.processArg("--save-dev"))
             utils.pushArgs(["--save", "--config.interactive"]);
 
-        var path = __dirname + "/../node_modules/.bin/hw2-bower";
+        var path = __dirname + "/../node_modules/.bin/upt";
         var child_process = require('child_process');
         
         // set stdio and customFds for colored logs in *nix and win
