@@ -49,7 +49,6 @@ nbproject/private/
 *.pydevproject
 .metadata
 .gradle
-bin/
 tmp/
 *.tmp
 *.swp
@@ -75,12 +74,6 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
-
-#
-# Hw2Core files
-#
-
-.htaccess
 
 
 

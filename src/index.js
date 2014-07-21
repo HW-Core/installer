@@ -5,34 +5,42 @@
 
 
 var Installer = function() {
-    
+
     var utils = require('./utils.js');
-    var git = require('./git.js');
     var fs = require('fs');
-    var installer = require('hw2core-bower');
-    var inquirer = require('hw2core-bower/node_modules/inquirer');
-    var cl = require("hw2core-bower/lib/util/cli");
-
-    this.installRoot = function() {
-        var options = cl.readOptions({}, process.argv);
-        var cmd = options.argv.remain[0];
-
-        git.installWithGit("git://github.com/hw2-core/directory-structure.git", utils.getCwd(), this.initProject.bind(this), cmd == "update" || null);
-    };
+    var installer;
+    var inquirer;
 
     this.initProject = function() {
         var that = this;
 
-        fs.exists(utils.getCwd() + "/bower.json", function(exists) {
-            if (!exists) {
-                console.log("Insert your project specifications:");
-                installer.commands.init({"directory": utils.getCwd(), "interactive": true}).on('end', function(data) {
-                    that.runCommand();
-                }).on('prompt', function(prompts, callback) {
-                    inquirer.prompt(prompts, callback);
-                });
+        var bowerrc = {
+            directory: './'
+        };
+
+        var outputFilename = '.bowerrc';
+
+        fs.writeFile(outputFilename, JSON.stringify(bowerrc, null, 4), function(err) {
+            if (err) {
+                console.log(err);
             } else {
-                that.runCommand();
+                console.log("bowerrc created");
+
+                installer = require('hw2core-bower');
+                inquirer = require('hw2core-bower/node_modules/inquirer');
+
+                fs.exists(utils.getCwd() + "/bower.json", function(exists) {
+                    if (!exists) {
+                        console.log("Insert your project specifications:");
+                        installer.commands.init({"directory": utils.getCwd(), "interactive": true}).on('end', function(data) {
+                            that.runCommand();
+                        }).on('prompt', function(prompts, callback) {
+                            inquirer.prompt(prompts, callback);
+                        });
+                    } else {
+                        that.runCommand();
+                    }
+                });
             }
         });
     };
@@ -40,25 +48,36 @@ var Installer = function() {
     this.runCommand = function() {
         if (!utils.processArg("--save-dev"))
             utils.pushArgs(["--save", "--config.interactive"]);
-        
+
+        var path = __dirname + "/../node_modules/.bin/hw2-bower";
         var child_process = require('child_process');
-        
-        var path=__dirname + "/../node_modules/hw2core-bower/bin/hw2-bower.js";
-        child_process.fork(path,process.argv.slice(2),{cwd:process.cwd()});
+        child_process.execFile(path,process.argv.slice(2),
+                {cwd: process.cwd()}, function(error, stdout, stderr) {
+            console.log('Installing module...');
+
+            if (stderr !== null) {
+                console.log('' + stderr);
+            }
+            if (stdout !== null) {
+                console.log('' + stdout);
+            }
+            if (error !== null) {
+                console.log('' + error);
+            }
+        });
     };
 
     this.help = function() {
         process.stdout.write("\
-    This programm will create hw2core folder structure \n\
-    if doesn't exist and installs/updates modules for hw2core \n\
-    Commands:\n\
-        install\n\
-        update\n\
-        uninstall\n\
-    Options:\n\
-        -p, --production\n\
-    \n"
-                );
+            This programm will create hw2core folder structure \n\
+            if doesn't exist and installs/updates modules for hw2core \n\
+            Commands:\n\
+                install\n\
+                update\n\
+                uninstall\n\
+            Options:\n\
+                -p, --production\n\
+        \n");
     };
 };
 
